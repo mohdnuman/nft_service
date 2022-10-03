@@ -3,6 +3,10 @@ const Web3 = require("web3");
 const mongoose = require("mongoose");
 let { NftUserModel, EthereumModel } = require("./models.js");
 const axios = require("axios");
+const Moralis=require('moralis');
+const { EvmChain}=require('@moralisweb3/evm-utils');
+const chain = EvmChain.ETHEREUM;
+
 const erc721 = require("./erc721.json");
 var converter = require("hex2dec");
 const abi = [
@@ -92,23 +96,33 @@ async function getNftData(logs) {
           resolve(null);
         }
         var collectionName = await contract.methods.name().call();
-        var dataUri=`https://api.opensea.io/api/v1/asset/${contractAddress}/${tokenId}/?include_orders=false`
+        await Moralis.start({
+          apiKey: '89QleVHymuDXy7Iqdz3aMSplpFlh7m6TOsK57YiwtpRLS8pUWAwCCBqvDhrP53wg',
+        });
+        
+        let response;
         try {
-          var response = await axios.get(dataUri);
+           response = await Moralis.EvmApi.nft.getNFTMetadata({
+            address,
+            chain,
+            tokenId,
+        });
         } catch (err) {
+          console.log(err);
             resolve(null);
         }
-        var response = JSON.parse(response);
-        console.log(response);
-        var image = response.image_url;
-        var dataObject = {
-          userAddress: user,
-          contractAddress: contractAddress,
-          collectionName: collectionName,
-          tokenId: tokenId,
-          image: image,
-        };
-        dataObjects.push(dataObject);
+        console.log(response.result);
+        // var response = JSON.parse(response);
+        // console.log(response);
+        // var image = response.image_url;
+        // var dataObject = {
+        //   userAddress: user,
+        //   contractAddress: contractAddress,
+        //   collectionName: collectionName,
+        //   tokenId: tokenId,
+        //   image: image,
+        // };
+        // dataObjects.push(dataObject);
       }
       resolve(dataObjects);
     } catch (error) {
