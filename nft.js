@@ -92,20 +92,20 @@ async function getNftData(logs) {
           resolve(null);
         }
         var collectionName = await contract.methods.name().call();
+        var dataUri=`https://api.opensea.io/api/v1/asset/${contractAddress}/${tokenId}/?include_orders=false`
         try {
-          var metadata = await axios.get(tokenUri);
+          var response = await axios.get(dataUri);
         } catch (err) {
             resolve(null);
         }
-        metadata = JSON.parse(metadata);
-        console.log(metadata);
-        var image = metadata.image;
+        var response = JSON.parse(response);
+        console.log(response);
+        var image = response.image_url;
         var dataObject = {
           userAddress: user,
           contractAddress: contractAddress,
           collectionName: collectionName,
           tokenId: tokenId,
-          tokenUri: tokenUri,
           image: image,
         };
         dataObjects.push(dataObject);

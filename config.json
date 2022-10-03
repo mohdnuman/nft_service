@@ -2,8 +2,8 @@
     "geth":{
         "url": "http://44.200.167.104"
     },
-    "startBlock":12679609,
-    "endBlock":12679610,
+    "startBlock":12679615,
+    "endBlock":12679620,
     "stopBlock":16000000,
     "sleepTime":500
 }
