@@ -3,10 +3,6 @@ const Web3 = require("web3");
 const mongoose = require("mongoose");
 let { NftUserModel, EthereumModel } = require("./models.js");
 const axios = require("axios");
-const Moralis=require('moralis');
-const { EvmChain}=require('@moralisweb3/evm-utils');
-const chain = EvmChain.ETHEREUM;
-
 const erc721 = require("./erc721.json");
 var converter = require("hex2dec");
 const abi = [
@@ -92,37 +88,38 @@ async function getNftData(logs) {
         var user = logs[i].topics[2];
         user = user.slice(-41, -1);
         var owner = await contract.methods.ownerOf(tokenId).call();
-        if (owner != user) {
-          resolve(null);
-        }
+        // if (owner != user) {
+        //   resolve(null);
+        // }
         var collectionName = await contract.methods.name().call();
-        await Moralis.start({
-          apiKey: '89QleVHymuDXy7Iqdz3aMSplpFlh7m6TOsK57YiwtpRLS8pUWAwCCBqvDhrP53wg',
-        });
-        
+
         let response;
         try {
-           response = await Moralis.EvmApi.nft.getNFTMetadata({
-            address,
-            chain,
-            tokenId,
-        });
+          const options = {
+            method: "GET",
+            url: `https://deep-index.moralis.io/api/v2/nft/${contractAddress}/${tokenId}`,
+            params: { chain: "eth", format: "decimal" },
+            headers: {
+              accept: "application/json",
+              "X-API-Key":
+                "89QleVHymuDXy7Iqdz3aMSplpFlh7m6TOsK57YiwtpRLS8pUWAwCCBqvDhrP53wg",
+            },
+          };
+          response = await axios.request(options);
         } catch (err) {
           console.log(err);
-            resolve(null);
+          resolve(null);
         }
-        console.log(response.result);
-        // var response = JSON.parse(response);
-        // console.log(response);
-        // var image = response.image_url;
-        // var dataObject = {
-        //   userAddress: user,
-        //   contractAddress: contractAddress,
-        //   collectionName: collectionName,
-        //   tokenId: tokenId,
-        //   image: image,
-        // };
-        // dataObjects.push(dataObject);
+        var metadata = JSON.parse(response.data.metadata);
+        var image = metadata.image;
+        var dataObject = {
+          userAddress: user,
+          contractAddress: contractAddress,
+          collectionName: collectionName,
+          tokenId: tokenId,
+          image: image,
+        };
+        dataObjects.push(dataObject);
       }
       resolve(dataObjects);
     } catch (error) {
@@ -196,23 +193,33 @@ async function getNftData(logs) {
           });
           NftData = await Promise.all(getNftDataCalls);
 
-          console.log(NftData);
-
-          //   NftData.forEach((Nft_user) => {
-          //     if (Nft_user != null) {
-          //       operations.push({
-          //         updateOne: {
-          //           filter: { userAddress: Nft_user.userAddress },
-          //           update: Nft_user,
-          //           upsert: true,
-          //         },
-          //       });
-          //     }
-          //   });
-          //   var bulkReceipt = await NftUserModel.bulkWrite(operations, {
-          //     ordered: false,
-          //   });
-          //   console.log(bulkReceipt);
+          NftData.forEach((Nft_user) => {
+            if (Nft_user != null) {
+              if (Nft_user.length != undefined) {
+                for (let i = 0; i < Nft_user.length; i++) {
+                  operations.push({
+                    updateOne: {
+                      filter: { userAddress: Nft_user[i].userAddress },
+                      update: Nft_user[i],
+                      upsert: true,
+                    },
+                  });
+                }
+              } else {
+                operations.push({
+                  updateOne: {
+                    filter: { userAddress: Nft_user.userAddress },
+                    update: Nft_user,
+                    upsert: true,
+                  },
+                });
+              }
+            }
+          });
+          var bulkReceipt = await NftUserModel.bulkWrite(operations, {
+            ordered: false,
+          });
+          console.log(bulkReceipt);
           var consoleObject = {
             seconds: Date.now() - start,
             blockNumber: iterBlock,

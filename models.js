@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const db1 = mongoose.createConnection(
-  "mongodb+srv://mohdnuman:_9!-kAExvCLxEsB@cluster0.rvvxe.mongodb.net/?retryWrites=true&w=majority",
+  "mongodb+srv://mohdnuman:numaniscool@sandbox.7miwi8d.mongodb.net/?retryWrites=true&w=majority",
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
