@@ -76,49 +76,50 @@ async function checkTransfer(logs) {
 async function getNftData(logs) {
   return new Promise(async (resolve, reject) => {
     try {
-      var dataObjects = [];
+      let dataObjects = [];
       for (let i = 0; i < logs.length; i++) {
         var web3 = await getWeb3Instance();
         var contractAddress = logs[i].address;
         var contract = new web3.eth.Contract(erc721, contractAddress);
         if (logs[i].topics[3] == undefined) {
-          resolve(null);
+          continue;
         }
         var tokenId = converter.hexToDec(logs[i].topics[3]);
+        tokenId = parseInt(tokenId);
         var user = logs[i].topics[2];
-        user = user.slice(-41, -1);
+        user = '0x'+user.slice(26);
         var owner = await contract.methods.ownerOf(tokenId).call();
-        if (owner != user) {
-          resolve(null);
+        if (owner.toLowerCase() != user.toLowerCase()) {
+          continue;
         }
         var collectionName = await contract.methods.name().call();
 
-        console.log(owner);
-        let response;
-        try {
-          const options = {
-            method: "GET",
-            url: `https://deep-index.moralis.io/api/v2/nft/${contractAddress}/${tokenId}`,
-            params: { chain: "eth", format: "decimal" },
-            headers: {
-              accept: "application/json",
-              "X-API-Key":
-                "89QleVHymuDXy7Iqdz3aMSplpFlh7m6TOsK57YiwtpRLS8pUWAwCCBqvDhrP53wg",
-            },
-          };
-          response = await axios.request(options);
-        } catch (err) {
-          console.log(err);
-          resolve(null);
-        }
-        var metadata = JSON.parse(response.data.metadata);
-        var image = metadata.image;
+        // console.log(contractAddress);
+        // let response;
+        // try {
+        //   const options = {
+        //     method: "GET",
+        //     url: `https://deep-index.moralis.io/api/v2/nft/${contractAddress}/${tokenId}`,
+        //     params: { chain: "eth", format: "decimal" },
+        //     headers: {
+        //       accept: "application/json",
+        //       "X-API-Key":
+        //         "89QleVHymuDXy7Iqdz3aMSplpFlh7m6TOsK57YiwtpRLS8pUWAwCCBqvDhrP53wg",
+        //     },
+        //   };
+        //   response = await axios.request(options);
+        // } catch (err) {
+        //   console.log(err);
+        //   resolve(null);
+        // }
+        // var metadata = JSON.parse(response.data.metadata);
+        // var image = metadata.image;
         var dataObject = {
           userAddress: user,
           contractAddress: contractAddress,
           collectionName: collectionName,
           tokenId: tokenId,
-          image: image,
+          image: null,
         };
         dataObjects.push(dataObject);
       }
@@ -196,21 +197,11 @@ async function getNftData(logs) {
 
           NftData.forEach((Nft_user) => {
             if (Nft_user != null) {
-              if (Nft_user.length != undefined) {
-                for (let i = 0; i < Nft_user.length; i++) {
-                  operations.push({
-                    updateOne: {
-                      filter: { userAddress: Nft_user[i].userAddress },
-                      update: Nft_user[i],
-                      upsert: true,
-                    },
-                  });
-                }
-              } else {
+              for (let i = 0; i < Nft_user.length; i++) {
                 operations.push({
                   updateOne: {
-                    filter: { userAddress: Nft_user.userAddress },
-                    update: Nft_user,
+                    filter: { userAddress: Nft_user[i].userAddress },
+                    update: Nft_user[i],
                     upsert: true,
                   },
                 });

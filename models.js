@@ -23,31 +23,12 @@ addressConnection.on("connected", function () {
   console.log(`MongoDB :: connected ${this.name}`);
 });
 
-const NftUser = new mongoose.Schema(
-  {
-    userAddress: {
-      type: String,
-    },
-    collectionName: {
-      type: String,
-    },
-    contractAddress: {
-      type: String,
-    },
-    tokenId: {
-      type: Number,
-    },
-    image: {
-      type: String,
-    },
-    tokenUri: {
-      type: String,
-    },
+const NftUser = new mongoose.Schema({
+  address: {
+    type: String,
   },
-  {
-    timestamps: true,
-  }
-);
+  tokens: {},//{""}
+});
 
 const ethereumSchema = new mongoose.Schema({
   address: {
