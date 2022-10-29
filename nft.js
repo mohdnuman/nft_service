@@ -88,11 +88,12 @@ async function getNftData(logs) {
         var user = logs[i].topics[2];
         user = user.slice(-41, -1);
         var owner = await contract.methods.ownerOf(tokenId).call();
-        // if (owner != user) {
-        //   resolve(null);
-        // }
+        if (owner != user) {
+          resolve(null);
+        }
         var collectionName = await contract.methods.name().call();
 
+        console.log(owner);
         let response;
         try {
           const options = {
