@@ -24,10 +24,21 @@ addressConnection.on("connected", function () {
 });
 
 const NftUser = new mongoose.Schema({
-  address: {
+  userAddress: {
     type: String,
   },
-  tokens: {},//{""}
+  contractAddress:{
+    type:String,
+  },
+  collectionName:{
+    type:String,
+  },
+  tokenId:{
+    type:Number,
+  },
+  image:{
+    type:String,
+  },
 });
 
 const ethereumSchema = new mongoose.Schema({
