@@ -88,18 +88,20 @@ async function getNftData(log) {
       var web3 = await getWeb3Instance();
       var contract = new web3.eth.Contract(erc721, contractAddress);
       if (log.topics[3] == undefined) {
-        resolve({});
+        resolve(null);
+        return;
       }
       var tokenId=log.topics[3];
       var user = log.topics[2];
       user = "0x" + user.slice(26);
       var owner=await ignoreError(contract.methods.ownerOf(tokenId).call);
-      console.log(owner);
       if (owner==null) {
-        resolve({});
+        resolve(null);
+        return;
       }
       if (owner.toLowerCase() != user.toLowerCase()) {
-        resolve({});
+        resolve(null);
+        return;
       }
 
       var collectionName=await ignoreError(contract.methods.name().call);
@@ -209,9 +211,9 @@ function removeNullLogs(logs) {
             }
           }
           nftData = await Promise.all(getNftDataCalls);
-
+          console.log(nftData);
           nftData.forEach((nft_user) => {
-            if (nft_user != {}) {
+            if (nft_user != null) {
               operations.push({
                 updateOne: {
                   filter: {
